@@ -1,0 +1,47 @@
+package middleware
+
+import (
+	"{{ .Package }}/ent"
+	"{{ .Package }}/privacy"
+	"os"
+
+	"aidanwoods.dev/go-paseto"
+	"github.com/gofiber/fiber/v2"
+)
+
+
+func IsAuthenticated(c *fiber.Ctx) error {
+	header := new(struct {
+		Authorization string `json:"authorization,omitempty"`
+	})
+	err := c.ReqHeaderParser(header)
+	if err != nil {
+	}
+
+	tokenString := header.Authorization
+
+	if tokenString == "" {
+		tokenString = c.Cookies("token")
+	}
+
+	key, err := paseto.V4SymmetricKeyFromHex(os.Getenv("TOKEN_KEY"))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).
+			JSON(fiber.Map{"message": err.Error()})
+	}
+
+	token, err := paseto.NewParser().ParseV4Local(key, tokenString, nil)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).
+			JSON(fiber.Map{"message": "unauthorized access"})
+	}
+
+	user := ent.User{}
+	err = token.Get("user", &user)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).
+			JSON(fiber.Map{"message": err.Error()})
+	}
+	c.SetUserContext(privacy.SetAuthUser(c.UserContext(), user))
+	return c.Next()
+}

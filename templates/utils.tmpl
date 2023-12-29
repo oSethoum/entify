@@ -4,13 +4,17 @@ import (
     "context"
     "golang.org/x/crypto/bcrypt"
     "github.com/gofiber/fiber/v2"
+	"math"
+	"strings"
+	"github.com/rs/xid"
 )
 
-func Value[T any](value T, array []T) T {
-	if len(array) > 0 {
-		return array[0]
-	}
-	return value
+func ID() string {
+	return strings.ToUpper(xid.New().String())
+}
+
+func Pages(total int, pageSize int) int {
+	return int(math.Ceil(float64(total) / float64(pageSize)))
 }
 
 func HashPassword(password string) (string, error) {

@@ -2,36 +2,51 @@ package db
 
 import (
     "log"
+    "context"
     "{{ .Package }}"
     "{{ .Package }}/migrate"
-    "context"
-    {{- if eq .DBConfig.Driver "sqlite3" }}
+    "entgo.io/ent/dialect"
+    entsql "entgo.io/ent/dialect/sql"
     _ "github.com/mattn/go-sqlite3"
-    {{- end}}
-    {{- if eq .DBConfig.Driver "mysql" }}
     _ "github.com/go-sql-driver/mysql"
-    {{- end}}
-    {{- if eq .DBConfig.Driver "postgres" }}
-    _ "github.com/lib/pq"
-    {{- end}}
+    _ "github.com/jackc/pgx/v5/stdlib"
+
 )
 
 var Client *ent.Client
 
 func Init() {
-    client, err := ent.Open("{{ .DBConfig.Driver }}", "{{ .DBConfig.Dsn }}")
-    if err != nil {
-        log.Fatalln(err)
-    }
-    
-    err = client.Schema.Create(
-		context.Background(),
-		migrate.WithDropColumn(true),
-		migrate.WithDropIndex(true),
-	)
+	Client := SQLite()
 
-    if err != nil {
-        log.Fatalln(err)
-    }
-    Client = client
+	if err := client.Schema.Create(context.Background(), migrate.WithDropColumn(true), migrate.WithDropIndex(true)); err != nil {
+		log.Fatalf("failed creating schema resources: %v", err)
+	}
+}
+
+func SQLite() *ent.Client {
+	client, err := ent.Open("sqlite3", os.Getenv("SQLITE_DSN"))
+	if err != nil {
+		log.Fatalf("failed opening connection to sqlite: %v", err)
+	}
+	return client
+}
+
+func PgSQL() *ent.Client {
+	db, err := sql.Open("pgx", os.Getenv("POSTGRESQL_DSN"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Create an ent.Driver from `db`.
+	drv := entsql.OpenDB(dialect.Postgres, db)
+	return ent.NewClient(ent.Driver(drv))
+}
+
+func MySQL() *ent.Client {
+	client, err := ent.Open("mysql", os.Getenv("MYSQL_DSN"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return client
 }

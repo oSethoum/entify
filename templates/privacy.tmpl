@@ -1,0 +1,20 @@
+package privacy
+
+import (
+	"{{ .Package }}/ent"
+	"context"
+)
+
+type ContextKey struct{ key string }
+
+var (
+	AuthUserContextKey = ContextKey{key: "auth_user_context_key"}
+)
+
+func GetAuthUser(ctx context.Context) ent.User {
+	return ctx.Value(AuthUserContextKey).(ent.User)
+}
+
+func SetAuthUser(ctx context.Context, user ent.User) context.Context {
+	return context.WithValue(ctx, AuthUserContextKey, user)
+}

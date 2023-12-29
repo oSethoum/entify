@@ -1,0 +1,20 @@
+package models
+
+type LoginBody struct {
+	Login      string `json:"login,omitempty" form:"login,omitempty"`
+	Password   string `json:"password,omitempty" form:"password,omitempty"`
+	RememberMe bool   `json:"remember_me" form:"remember_me,omitempty"`
+}
+
+
+type ForgotPasswordBody struct {
+    Email string `json:"email,omitempty" form:"email,omitempty"`
+}
+
+
+type RegisterBody struct {
+    Username string   `json:"username,omitempty" form:"username,omitempty"`
+    Email    string   `json:"email,omitempty" form:"email,omitempty"`
+    Password string   `json:"password,omitempty" form:"password,omitempty"`
+}
+

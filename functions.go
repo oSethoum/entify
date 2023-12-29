@@ -12,14 +12,9 @@ import (
 
 var (
 	snake      = gen.Funcs["snake"].(func(string) string)
-	plural     = gen.Funcs["plural"].(func(string) string)
 	buggyCamel = gen.Funcs["camel"].(func(string) string)
 	camel      = func(s string) string { return buggyCamel(snake(s)) }
 )
-
-func init() {
-
-}
 
 func initFunctions(e *Extension) {
 	is_base := func(f *load.Field) bool {
@@ -43,6 +38,10 @@ func initFunctions(e *Extension) {
 
 		}
 		return f.Tag
+	}
+
+	caseFunc := func() {
+
 	}
 
 	imports := func(g *gen.Graph, isInput ...bool) []string {
@@ -206,6 +205,7 @@ func initFunctions(e *Extension) {
 		return "\"" + strings.Join(fields, "\" | \"") + "\""
 	}
 
+	gen.Funcs["case"] = caseFunc
 	gen.Funcs["camel"] = camel
 	gen.Funcs["tag"] = tag
 	gen.Funcs["imports"] = imports

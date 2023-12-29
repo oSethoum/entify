@@ -1,0 +1,170 @@
+package handlers
+
+import (
+	"{{ .Package }}/db"
+	"{{ .Package }}/ent"
+	"{{ .Package }}/ent/{{ lower .CurrentSchema.Name }}"
+	"{{ .Package }}/utils"
+
+	"github.com/gofiber/fiber/v2"
+)
+
+{{ $pn := plural .CurrentSchema.Name  }}
+{{ $ppn := plural .CurrentSchema.Name | pascal }}
+
+{{ if .WithSwagger }}
+// Query{{ $ppn }} godoc
+//
+//	@Summary	Query {{ $ppn }}
+//	@Tags		appointments
+//	@Produce	json
+//	@Param		search	query		string	false	"Search first last name"
+//	@Param		page	query		int		false	"Page number"
+//	@Param		limit	query		int		false	"Query limit"
+//	@Success	200		{object}	models.Query{{ $ppn }}Result
+//	@Failure	404		{object}	models.ErrorResponse
+//	@Router		/appointments/ [get]
+{{ end -}}
+func Query{{ $ppn }}(c *fiber.Ctx) error {
+	search := c.Query("search")
+	page := c.QueryInt("page", 1)
+	limit := c.QueryInt("limit", 20)
+	offset := (page - 1) * limit
+
+	query := db.Client.Appointment.Query().Where(appointment.Or(
+		appointment.ID(search),
+	)).Limit(limit).Offset(offset)
+
+	appointments, err := query.All(c.UserContext())
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"code":  "cannot_query_appointments",
+			"error": err.Error(),
+		})
+	}
+	total, _ := query.Count(c.UserContext())
+
+	return c.JSON(fiber.Map{
+		"total":        total,
+		"pages":        utils.Pages(total, limit),
+		"appointments": appointments,
+	})
+}
+{{ if .WithSwagger }}
+// Find{{ $ppn }} godoc
+//
+//	@Summary	Find {{ $ppn }} by id
+//	@Tags		appointments
+//	@Accept		json
+//	@Produce	json
+//	@Param		id	path		string	true	"Create appointment"
+//	@Success	200	{object}	ent.Appointment
+//	@Failure	404	{object}	nil
+//	@Router		/appointments/:id [get]
+{{ end -}}
+func FindAppointment(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	entity, err := db.Client.Appointment.Query().Where(appointment.ID(id)).First(c.UserContext())
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"code":  "error_appointment_not_found",
+			"error": err.Error(),
+		})
+	}
+
+	return c.JSON(entity)
+}
+
+{{ if .WithSwagger }}
+// CreateAppointment godoc
+//
+//	@Summary	Create Appointment
+//	@Tags		appointments
+//	@Accept		json
+//	@Accept		mpfd
+//	@Produce	json
+//	@Param		input	body		ent.AppointmentCreateInput	true	"Create appointment"
+//	@Success	200		{object}	ent.Appointment
+//	@Failure	404		{object}	nil
+//	@Router		/appointments/ [post]
+{{ end -}}
+func CreateAppointment(c *fiber.Ctx) error {
+	input := new(ent.AppointmentCreateInput)
+	err := c.BodyParser(input)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"code":  "error_parsing_body",
+			"error": err.Error(),
+		})
+	}
+
+	appointment, err := db.Client.Appointment.Create().SetInput(input).Save(c.UserContext())
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"code":  "error_creating_appointment",
+			"error": err.Error(),
+		})
+	}
+
+	return c.JSON(appointment)
+}
+
+{{ if .WithSwagger }}
+// UpdateAppointment godoc
+//
+//	@Summary	Update Appointment
+//	@Tags		appointments
+//	@Accept		json
+//	@Produce	json
+//	@Param		id		path		string						true	"Appointment ID"
+//	@Param		input	body		ent.AppointmentUpdateInput	true	"Update appointment"
+//	@Success	200		{object}	ent.Appointment
+//	@Failure	404		{object}	models.ErrorResponse
+//	@Router		/appointments/:id [patch]
+{{ end -}}
+func UpdateAppointment(c *fiber.Ctx) error {
+	input := new(ent.AppointmentUpdateInput)
+	id := c.Params("id")
+
+	err := c.BodyParser(input)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"code":  "error_parsing_body",
+			"error": err.Error(),
+		})
+	}
+
+	appointment, err := db.Client.Appointment.UpdateOneID(id).SetInput(input).Save(c.UserContext())
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"code":  "error_updating_appointment",
+			"error": err.Error(),
+		})
+	}
+
+	return c.JSON(appointment)
+}
+
+{{ if .WithSwagger }}
+// DeleteAppointment godoc
+//
+//	@Summary	Delete Appointment
+//	@Tags		appointments
+//	@Produce	json
+//	@Param		id	path		string	true	"Appointment ID"
+//	@Success	200	{object}	nil
+//	@Failure	404	{object}	models.ErrorResponse
+//	@Router		/appointments/:id [delete]
+{{ end -}}
+func DeleteAppointment(c *fiber.Ctx) error {
+	appointmentId := c.Params("id")
+
+	err := db.Client.Appointment.DeleteOneID(appointmentId).Exec(c.UserContext())
+	if err != nil {
+		return err
+	}
+
+	return c.Status(200).JSON(nil)
+}

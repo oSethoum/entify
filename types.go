@@ -17,13 +17,14 @@ type Driver = string
 type File = uint
 
 const (
-	Db File = iota * 2
+	DB File = iota * 2
 	Api
 	Auth
 	Handlers
 	Input
 	Query
 	Privacy
+	Env
 	Routes
 	Token
 	Types
@@ -41,15 +42,16 @@ type option = func(*Extension)
 
 type data struct {
 	*gen.Graph
-	Config *Config
-	Schema *load.Schema
+	Config        *Config
+	CurrentSchema *load.Schema
 }
 
 type Config struct {
-	Driver     *Driver
-	Dsn        *string
-	ClientPath string
-
+	Driver         *Driver
+	Dsn            *string
+	ClientPath     string
+	Package        string
+	IgnoreSchemas  []string
 	WithFiles      []File
 	WithSwagger    bool
 	WithValidation bool
