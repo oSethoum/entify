@@ -119,15 +119,6 @@ export interface {{ pascal .Name }}WhereInput {
 }
 {{- end }}
 
-// api related types
-export type ID = string;
-export type Response<T = undefined> = {
-    code: number;
-    status: "success" | "error";
-    data: T;
-    error?: string;
-}
-
 export type API = {
     {{ range .Schemas}}
         {{ plural .Name | camel }}: {

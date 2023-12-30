@@ -4,7 +4,33 @@ import (
     "github.com/gofiber/fiber/v2"
 )
 
-
-func Upload(c *fiber.ctx) error {
+{{ if .WithSwagger }}
+// Upload Files godoc
+//
+//	@Summary	Upload Files
+//	@Tags		upload
+//	@Produce	json
+//	@Param		input body		string	true	"Upload Files"
+//	@Success	200	 {object}	models.UploadFilesBody
+//	@Failure	400	 {object}	models.Error
+//	@Router		/upload/many [delete]
+{{ end -}}
+func UploadFiles(c *fiber.ctx) error {
     return nil
 }
+
+{{ if .WithSwagger }}
+// Upload File godoc
+//
+//	@Summary	Upload File
+//	@Tags		upload
+//	@Produce	json
+//	@Param		input body		string	true	"Upload File"
+//	@Success	200	 {object}	models.UploadFilesBody
+//	@Failure	400	 {object}	models.Error
+//	@Router		/upload/one [delete]
+{{ end -}}
+func UploadFiles(c *fiber.ctx) error {
+    return nil
+}
+

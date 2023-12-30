@@ -11,6 +11,7 @@ import (
 )
 
 var (
+	pascal     = gen.Funcs["pascal"].(func(string) string)
 	snake      = gen.Funcs["snake"].(func(string) string)
 	buggyCamel = gen.Funcs["camel"].(func(string) string)
 	camel      = func(s string) string { return buggyCamel(snake(s)) }
@@ -40,8 +41,15 @@ func initFunctions(e *Extension) {
 		return f.Tag
 	}
 
-	caseFunc := func() {
+	caseFunc := func(name string) string {
+		if e.data.Config.Case == Pascal {
+			return pascal(name)
+		} else if e.data.Config.Case == Camel {
 
+			return camel(name)
+		} else {
+			return snake(name)
+		}
 	}
 
 	imports := func(g *gen.Graph, isInput ...bool) []string {

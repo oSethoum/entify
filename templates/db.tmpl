@@ -3,8 +3,8 @@ package db
 import (
     "log"
     "context"
-    "{{ .Package }}"
-    "{{ .Package }}/migrate"
+    "{{ dir .Package }}"
+    "{{ dir .Package }}/migrate"
     "entgo.io/ent/dialect"
     entsql "entgo.io/ent/dialect/sql"
     _ "github.com/mattn/go-sqlite3"

@@ -6,11 +6,9 @@ type LoginBody struct {
 	RememberMe bool   `json:"remember_me" form:"remember_me,omitempty"`
 }
 
-
 type ForgotPasswordBody struct {
     Email string `json:"email,omitempty" form:"email,omitempty"`
 }
-
 
 type RegisterBody struct {
     Username string   `json:"username,omitempty" form:"username,omitempty"`

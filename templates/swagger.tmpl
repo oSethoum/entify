@@ -11,10 +11,14 @@ type UploadFileBody struct {
 	File string `json:"file,omitempty" form:"file,omitempty"`
 }
 
+type Error struct {
+    Kind string `json:"kind,omitempty" form:"kind,omitempty"`
+    Error string `json:"error,omitempty" form:"error,omitempty"`
+}
+
 {{ range .Schemas }}
 type Query{{ plural .Name | pascal }}Result { 
     Total string `json:"total"`
-    Pages string `json:"pages"`
     {{ plural .Name | pascal }} ent.{{pascal .Name }} `json:"{{ plural .Name | case }}"`
 }
 {{ end }}

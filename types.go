@@ -13,7 +13,7 @@ type Extension struct {
 }
 
 type Driver = string
-
+type Case = string
 type File = uint
 
 const (
@@ -38,6 +38,12 @@ const (
 	PostgreSQL Driver = "postgres"
 )
 
+const (
+	Pascal Case = "pascal"
+	Camel  Case = "camel"
+	Snake  Case = "snake"
+)
+
 type option = func(*Extension)
 
 type data struct {
@@ -47,14 +53,13 @@ type data struct {
 }
 
 type Config struct {
-	Driver         *Driver
-	Dsn            *string
-	ClientPath     string
-	Package        string
-	IgnoreSchemas  []string
-	WithFiles      []File
-	WithSwagger    bool
-	WithValidation bool
+	Case          Case
+	ClientPath    string
+	Package       string
+	IgnoreSchemas []string
+	Files         []File
+	Swagger       bool
+	Validation    bool
 }
 
 type comparable interface {
