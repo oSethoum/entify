@@ -139,13 +139,16 @@ func Delete{{ .CurrentSchema.Name }}(c *fiber.Ctx) error {
 	id := c.Params("id")
 	err := db.Client.{{ .CurrentSchema.Name }}.DeleteOneID(id).Exec(c.UserContext())
 	if err != nil {
-        // TODO: ent check the error
+		status := fiber.StatusBadRequest
 
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-            "kind":" delete_entity",
-            "error": err.Error(),
-        })
+		if ent.IsNotFound(err) {
+			status = fiber.StatusNotFound
+		}
+
+		return c.Status(status).JSON(fiber.Map{
+			"kind":  " delete_entity",
+			"error": err.Error(),
+		})
 	}
-
 	return c.Status(fiber.StatusOK).JSON(nil)
 }
