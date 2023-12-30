@@ -143,6 +143,15 @@ func initFunctions(e *Extension) {
 
 	get_name := func(f *load.Field) string {
 		n := camel(f.Name)
+
+		if e.data.Config.Case == Snake {
+			n = snake(f.Name)
+		}
+
+		if e.data.Config.Case == Pascal {
+			n = camel(f.Name)
+		}
+
 		if strings.HasSuffix(n, "ID") {
 			n = strings.TrimSuffix(n, "ID") + "Id"
 		}

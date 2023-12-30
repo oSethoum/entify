@@ -19,7 +19,8 @@ func NewExtension(opts ...option) *Extension {
 		opt(e)
 	}
 
-	e.hooks = append(e.hooks, e.generate)
 	initFunctions(e)
+	e.hooks = append(e.hooks, e.generate)
+
 	return e
 }

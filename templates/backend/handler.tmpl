@@ -12,12 +12,12 @@ import (
 // Query{{ plural .CurrentSchema.Name }} godoc
 //
 //	@Summary	Query {{ plural .CurrentSchema.Name }}
-//	@Tags		{{ plural .CurrentSchema.Name | kebab }}
+//	@Tags		{{ plural .CurrentSchema.Name | snake }}
 //	@Produce	json
 //	@Param		query	query		ent.{{ .CurrentSchema.Name }}QueryInput	false	"Query object"
 //	@Success	200		{object}	models.Query{{ plural .CurrentSchema.Name | pascal }}Success
 //	@Failure	400		{object}	models.Error
-//	@Router		/{{ plural .CurrentSchema.Name | kebab }}/ [get]
+//	@Router		/{{ plural .CurrentSchema.Name | snake }}/ [get]
 {{ end -}}
 func Query{{ plural .CurrentSchema.Name }}(c *fiber.Ctx) error {
 	query := new(ent.{{ .CurrentSchema.Name }}QueryInput)
@@ -57,14 +57,14 @@ func Query{{ plural .CurrentSchema.Name }}(c *fiber.Ctx) error {
 // Create{{ .CurrentSchema.Name }} godoc
 //
 //	@Summary	Create {{ .CurrentSchema.Name }}
-//	@Tags		{{ plural .CurrentSchema.Name | kebab }}
+//	@Tags		{{ plural .CurrentSchema.Name | snake }}
 //	@Accept		json
 //	@Accept		mpfd
 //	@Produce	json
 //	@Param		input	body		ent.{{ .CurrentSchema.Name }}CreateInput	true	"Create {{ .CurrentSchema.Name }}"
 //	@Success	200		{object}	ent.{{ .CurrentSchema.Name }}
 //	@Failure	400		{object}	models.Error
-//	@Router		/{{ plural .CurrentSchema.Name | kebab }}/ [post]
+//	@Router		/{{ plural .CurrentSchema.Name | snake }}/ [post]
 {{ end -}}
 func Create{{ .CurrentSchema.Name }}(c *fiber.Ctx) error {
 	input := new(ent.{{ .CurrentSchema.Name }}CreateInput)
@@ -91,14 +91,14 @@ func Create{{ .CurrentSchema.Name }}(c *fiber.Ctx) error {
 // Update{{ .CurrentSchema.Name }} godoc
 //
 //	@Summary	Update {{ .CurrentSchema.Name }}
-//	@Tags		{{ plural .CurrentSchema.Name | kebab }}
+//	@Tags		{{ plural .CurrentSchema.Name | snake }}
 //	@Accept		json
 //	@Produce	json
 //	@Param		id		path		string						true	"{{ .CurrentSchema.Name }} ID"
 //	@Param		input	body		ent.{{ .CurrentSchema.Name }}UpdateInput	true	"Update {{ .CurrentSchema.Name }} Body"
 //	@Success	200		{object}	ent.{{ .CurrentSchema.Name }}
 //	@Failure	400		{object}	models.Error
-//	@Router		/{{ plural .CurrentSchema.Name | kebab }}/:id [patch]
+//	@Router		/{{ plural .CurrentSchema.Name | snake }}/:id [patch]
 {{ end -}}
 func Update{{ .CurrentSchema.Name }}(c *fiber.Ctx) error {
 	input := new(ent.{{ .CurrentSchema.Name }}UpdateInput)
@@ -127,13 +127,13 @@ func Update{{ .CurrentSchema.Name }}(c *fiber.Ctx) error {
 // Delete{{ .CurrentSchema.Name }} godoc
 //
 //	@Summary	Delete {{ .CurrentSchema.Name }}
-//	@Tags		{{ plural .CurrentSchema.Name | kebab }}
+//	@Tags		{{ plural .CurrentSchema.Name | snake }}
 //	@Produce	json
 //	@Param		id	path		string	true	"{{ .CurrentSchema.Name }} ID"
 //	@Success	200	{object}	nil
 //	@Failure	400	{object}	models.Error
 //	@Failure	404	{object}	models.Error
-//	@Router		/{{ plural .CurrentSchema.Name | kebab }}/:id [delete]
+//	@Router		/{{ plural .CurrentSchema.Name | snake }}/:id [delete]
 {{ end -}}
 func Delete{{ .CurrentSchema.Name }}(c *fiber.Ctx) error {
 	id := c.Params("id")

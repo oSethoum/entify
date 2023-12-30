@@ -77,7 +77,7 @@ import (
                     Clear{{ pascal .Name }} bool `json:"clear{{ pascal .Name }},omitempty"`
                 {{- end }}
             {{- else }}
-                Add{{ singular .Name | pascal }}IDs []{{ $g.IDType }} `json:"Add{{ singular .Name | pascal }}Ids,omitempty"`
+                Add{{ singular .Name | pascal }}IDs []{{ $g.IDType }} `{{ add_ids_tag .Name }}`
                 {{- if not .Required }}
                     Remove{{ singular .Name | pascal }}IDs []{{ $g.IDType }} `{{ remove_ids_tag .Name }}`
                     Clear{{ pascal .Name }} bool `{{ clear_tag .Name }}`

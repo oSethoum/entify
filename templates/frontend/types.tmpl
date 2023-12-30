@@ -11,7 +11,7 @@ export interface {{ pascal .Name }} {
     {{- if gt $ed 0 }}
     edges:{
     {{- range .Edges }}
-        {{ camel .Name }}?: {{ pascal .Type }} {{- if not .Unique}}[]{{- end}};
+        {{ case .Name }}?: {{ pascal .Type }} {{- if not .Unique}}[]{{- end}};
     {{- end}}
     }
     {{- end}}
@@ -24,9 +24,9 @@ export interface {{ pascal .Name }}CreateInput{
     {{- range .Edges}}
         {{- if edge_field . | not }}
             {{- if .Unique}}
-                {{ camel .Name }}Id{{- if not .Required}}?{{- end}}: {{ get_type_info $g.IDType }};
+                {{ case ( printf "%sId" (pascal .Name) ) }}{{- if not .Required}}?{{- end}}: {{ get_type_info $g.IDType }};
             {{- else}}
-                add{{ singular .Name | pascal }}Ids?: {{ get_type_info $g.IDType }}[];
+                {{ case ( printf "add%sIds" (pascal .Name) ) }}?: {{ get_type_info $g.IDType }}[];
             {{- end  }}
         {{- end }}
     {{- end}}
@@ -39,11 +39,11 @@ export interface {{ pascal .Name }}UpdateInput{
     {{- range .Edges}}
         {{- if edge_field . | not }}
             {{- if .Unique}}
-                {{ camel .Name }}Id?: {{ get_type_info $g.IDType }};
+                {{ case ( printf "%sId" (pascal .Name) ) }}?: {{ get_type_info $g.IDType }};
             {{- else}}
-                add{{ singular .Name | pascal }}Ids?: {{ id_type $s }}[];
-                remove{{ singular .Name | pascal }}Ids?: {{ id_type $s }}[];
-                clear{{ pascal .Name }}?: boolean;
+                {{ case ( printf "add%sIds" (pascal .Name) ) }}?: {{ id_type $s }}[];
+                {{ case ( printf "remove%sIds" (pascal .Name) ) }}?: {{ id_type $s }}[];
+                {{ case ( printf "clear%s" (pascal .Name) ) }}?: boolean;
             {{- end  }}
         {{- end }}
     {{- end}}
@@ -75,46 +75,46 @@ export interface {{ pascal .Name }}WhereInput {
     
     {{- range .Fields }}
         {{- if gt (len .Enums) 0 -}}
-            {{ camel .Name }}EQ?:  {{ get_type . }};
-            {{ camel .Name }}NEQ?: {{ get_type . }};
-            {{ camel .Name }}In?: ({{ get_type . }})[];
-            {{ camel .Name }}NotIn?: ({{ get_type . }})[];
+            {{ case .Name }}_EQ?:  {{ get_type . }};
+            {{ case .Name }}_NEQ?: {{ get_type . }};
+            {{ case .Name }}_In?: ({{ get_type . }})[];
+            {{ case .Name }}_NotIn?: ({{ get_type . }})[];
         {{- end -}}
         {{- if get_type . | eq "boolean" }}
-            {{ camel .Name }}EQ?:  {{ get_type . }};
-            {{ camel .Name }}NEQ?: {{ get_type . }}; 
+            {{ case .Name }}_EQ?:  {{ get_type . }};
+            {{ case .Name }}_NEQ?: {{ get_type . }}; 
         {{- end }}
         {{- if is_comparable . }}
-            {{ camel .Name }}?: {{ get_type . }};
-            {{ camel .Name }}NEQ?: {{ get_type . }} 
-            {{ camel .Name }}In?: {{ get_type . }}[];
-            {{ camel .Name }}NotIn?: {{ get_type . }}[];
+            {{ case .Name }}?: {{ get_type . }};
+            {{ case .Name }}_NEQ?: {{ get_type . }} 
+            {{ case .Name }}_In?: {{ get_type . }}[];
+            {{ case .Name }}_NotIn?: {{ get_type . }}[];
             
             {{- if enum_or_edge_filed $s . | not }}
-                {{ camel .Name }}GT?: {{ get_type . }};
-                {{ camel .Name }}GTE?: {{ get_type . }};
-                {{ camel .Name }}LT?: {{ get_type . }};
-                {{ camel .Name }}LTE?: {{ get_type . }};
+                {{ case .Name }}_GT?: {{ get_type . }};
+                {{ case .Name }}_GTE?: {{ get_type . }};
+                {{ case .Name }}_LT?: {{ get_type . }};
+                {{ case .Name }}_LTE?: {{ get_type . }};
             {{- end }}
         {{- end }}
         {{- if .Optional }}
-            {{ camel .Name }}IsNil?: boolean; 
-            {{ camel .Name }}NotNil?: boolean;
+            {{ case .Name }}_IsNil?: boolean; 
+            {{ case .Name }}_NotNil?: boolean;
         {{- end }}
         {{- if eq .Name "id" | not }}
             {{- if get_type . | eq "string"}}
-                {{ camel .Name }}Contains?: string; 
-                {{ camel .Name }}HasPrefix?: string; 
-                {{ camel .Name }}HasSuffix?: string; 
-                {{ camel .Name }}ContainsFold?: string; 
-                {{ camel .Name }}EqualFold?: string; 
+                {{ case .Name }}_Contains?: string; 
+                {{ case .Name }}_HasPrefix?: string; 
+                {{ case .Name }}_HasSuffix?: string; 
+                {{ case .Name }}_ContainsFold?: string; 
+                {{ case .Name }}_EqualFold?: string; 
             {{- end }}
         {{- end }}
     {{- end }}
     {{- range .Edges}}
         // "{{.Name}}" edge predicates.
-        has{{pascal .Name}}?: boolean;		               
-        has{{pascal .Name}}With?: {{pascal .Type}}WhereInput;
+        {{ case (printf "has%s" (pascal .Name)) }}?: boolean;		               
+        {{ case (printf "has%sWith" (pascal .Name)) }}?: {{pascal .Type}}WhereInput;
     {{- end}}
 }
 {{- end }}
@@ -123,7 +123,7 @@ export type ID = string;
 
 export type API = {
     {{ range .Schemas}}
-        {{ plural .Name | camel }}: {
+        {{ plural .Name | case }}: {
             createInput: {{ pascal .Name }}CreateInput;
             updateInput: {{ pascal .Name }}UpdateInput;
             queryInput: {{ pascal .Name }}QueryInput;
