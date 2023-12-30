@@ -1,7 +1,13 @@
 package handlers
 
 import (
-    "github.com/gofiber/fiber/v2"
+	"{{ dir .Package }}/models"
+	"{{ dir .Package }}/utils"
+	"fmt"
+	"os"
+	"path/filepath"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 {{ if .Config.Swagger }}
@@ -17,7 +23,28 @@ import (
 //	@Router		/files [post]
 {{ end -}}
 func UploadFiles(c *fiber.Ctx) error {
-    return nil
+	form, err := c.MultipartForm()
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"kind":  "multipart_form",
+			"error": err.Error(),
+		})
+	}
+
+	files := form.File["documents"]
+	names := []string{}
+	for _, file := range files {
+		name := utils.ID() + filepath.Ext(file.Filename)
+		err := c.SaveFile(file, fmt.Sprintf("./upload/%s", name))
+		if err == nil {
+			names = append(names, name)
+		}
+	}
+
+	return c.JSON(fiber.Map{
+		"files": names,
+	})
 }
 
 {{ if .Config.Swagger }}
@@ -33,6 +60,27 @@ func UploadFiles(c *fiber.Ctx) error {
 //	@Router		/files [delete]
 {{ end -}}
 func DeleteFiles(c *fiber.Ctx) error {
-    return nil
+
+	body := new(models.Files)
+
+	err := c.BodyParser(body)
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"kind":  "parse_body",
+			"error": err.Error(),
+		})
+	}
+	names := []string{}
+	for _, name := range body.Files {
+		err = os.Remove(fmt.Sprintf("./upload/%s", name))
+		if err == nil {
+			names = append(names, name)
+		}
+	}
+
+	return c.JSON(fiber.Map{
+		"files": names,
+	})
 }
 

@@ -3,10 +3,6 @@
 
 package models
 
-type Files struct {
-    Files []string `json:"files"`
-}
-
 type Error struct {
     Kind string `json:"kind,omitempty" form:"kind,omitempty"`
     Error string `json:"error,omitempty" form:"error,omitempty"`
