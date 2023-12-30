@@ -15,6 +15,6 @@ type Error struct {
 {{ range .Schemas }}
 type Query{{ plural .Name | pascal }}Success struct { 
     Total string `json:"total"`
-    Data ent.{{pascal .Name }} `json:"data"`
+    Data []ent.{{pascal .Name }} `json:"data"`
 }
 {{ end }}
