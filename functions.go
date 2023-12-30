@@ -26,24 +26,6 @@ func initFunctions(e *Extension) {
 			f.Name == "ID" || f.Name == "createdAt" || f.Name == "updatedAt" || f.Name == "CreatedAt" || f.Name == "UpdatedAt"
 	}
 
-	tag := func(f *load.Field) string {
-		if f.Tag == "" {
-			name := f.Name
-			if strings.HasSuffix(name, "ID") {
-				name = strings.TrimSuffix(name, "ID")
-				name += "Id"
-			}
-			return fmt.Sprintf("json:\"%s,omitempty\"", name)
-		}
-
-		if !strings.Contains(f.Tag, "json") {
-			name := camel(f.Name)
-			f.Tag = fmt.Sprintf("json:\"%s,omitempty\" %s", name, f.Tag)
-
-		}
-		return f.Tag
-	}
-
 	caseFunc := func(name string) string {
 		if e.data.Config.Case == Pascal {
 			return pascal(name)
@@ -53,6 +35,50 @@ func initFunctions(e *Extension) {
 		} else {
 			return snake(name)
 		}
+	}
+
+	fieldTag := func(f *load.Field) string {
+		f.Tag = fmt.Sprintf(`json:"%s,omitempty"`, caseFunc(f.Name))
+
+		if e.data.Config.FormTag {
+			return f.Tag + fmt.Sprintf(` form:"%s,omitempty"`, caseFunc(f.Name))
+		}
+
+		return f.Tag
+	}
+
+	addIdsTag := func(schema string) string {
+		tag := fmt.Sprintf(`json:"%s,omitempty"`, caseFunc(fmt.Sprintf("add%sIds", pascal(schema))))
+
+		if e.data.Config.FormTag {
+			tag += fmt.Sprintf(` form:"%s,omitempty"`, caseFunc(fmt.Sprintf("add%sIds", pascal(schema))))
+		}
+
+		return tag
+	}
+
+	removeIdsTag := func(schema string) string {
+		tag := fmt.Sprintf(`json:"%s,omitempty"`, caseFunc(fmt.Sprintf("remove%sIds", pascal(schema))))
+
+		if e.data.Config.FormTag {
+			tag += fmt.Sprintf(` form:"%s,omitempty"`, caseFunc(fmt.Sprintf("remove%sIds", pascal(schema))))
+		}
+
+		return tag
+	}
+
+	clearTag := func(schema string) string {
+		tag := fmt.Sprintf(`json:"%s,omitempty"`, caseFunc(fmt.Sprintf("clear%s", pascal(schema))))
+
+		if e.data.Config.FormTag {
+			tag += fmt.Sprintf(` form:"%s,omitempty"`, caseFunc(fmt.Sprintf("clear%s", pascal(schema))))
+		}
+
+		return tag
+	}
+
+	uniqueEdgeTag := func(schema string) string {
+		return fmt.Sprintf(`json:"%s,omitempty"`, caseFunc(fmt.Sprintf("%sId", pascal(schema))))
 	}
 
 	imports := func(g *gen.Graph, isInput ...bool) []string {
@@ -218,7 +244,7 @@ func initFunctions(e *Extension) {
 
 	gen.Funcs["case"] = caseFunc
 	gen.Funcs["camel"] = camel
-	gen.Funcs["tag"] = tag
+	gen.Funcs["tag"] = fieldTag
 	gen.Funcs["imports"] = imports
 	gen.Funcs["null_field_create"] = null_field_create
 	gen.Funcs["null_field_update"] = null_field_update
@@ -237,4 +263,8 @@ func initFunctions(e *Extension) {
 	gen.Funcs["dir"] = path.Dir
 	gen.Funcs["is_base"] = is_base
 	gen.Funcs["kebab"] = kebab
+	gen.Funcs["add_ids_tag"] = addIdsTag
+	gen.Funcs["remove_ids_tag"] = removeIdsTag
+	gen.Funcs["clear_tag"] = clearTag
+	gen.Funcs["unique_edge_tag"] = uniqueEdgeTag
 }

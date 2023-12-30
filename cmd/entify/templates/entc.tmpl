@@ -4,6 +4,7 @@ package main
 
 import (
 	"log"
+	"os/exec"
 
 	"entgo.io/ent/entc"
 	"entgo.io/ent/entc/gen"
@@ -11,7 +12,31 @@ import (
 )
 
 func main() {
-	ex := entify.NewExtension()
+	ex := entify.NewExtension(entify.WithConfig(&entify.Config{
+		Case:       entify.Snake,
+		ClientPath: "client/src/lib/api",
+		Package:    "app",
+		IDType:     "string",
+		Files: []entify.File{
+			entify.Api,
+			entify.Auth,
+			entify.DB,
+			entify.Env,
+			entify.Handlers,
+			entify.Input,
+			entify.Privacy,
+			entify.Query,
+			entify.Routes,
+			entify.Token,
+			entify.Types,
+			entify.Files,
+			entify.Model,
+			entify.Swagger,
+			entify.Utils,
+		},
+		Swagger:    true,
+		Validation: true,
+	}))
 	options := []entc.Option{
 		entc.Extensions(ex),
 	}
@@ -21,4 +46,5 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+	exec.Command("gofmt", "-w", "-s", "-l", "../..").Run()
 }

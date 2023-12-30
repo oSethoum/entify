@@ -30,7 +30,7 @@ const (
 	Model
 	Swagger
 	Types
-	Upload
+	Files
 	Utils
 )
 
@@ -62,6 +62,7 @@ type Config struct {
 	IgnoreSchemas []string
 	Files         []File
 	Swagger       bool
+	FormTag       bool
 	Validation    bool
 }
 

@@ -39,39 +39,39 @@ type OrderField struct {
 
         {{- range .Fields }}
             {{- if gt (len .Enums) 0  }}
-            {{ pascal .Name }}EQ     *{{ extract_type . }}   `json:"{{ camel .Name }}EQ,omitempty"`
-            {{ pascal .Name }}NEQ    *{{ extract_type . }}   `json:"{{ camel .Name }}NEQ,omitempty"`
-            {{ pascal .Name }}In     []{{ extract_type . }}  `json:"{{ camel .Name }}In,omitempty"`
-            {{ pascal .Name }}NotIn  []{{ extract_type . }}  `json:"{{ camel .Name }}NotIn,omitempty"`
+            {{ pascal .Name }}EQ     *{{ extract_type . }}   `json:"{{ case .Name }}EQ,omitempty"`
+            {{ pascal .Name }}NEQ    *{{ extract_type . }}   `json:"{{ case .Name }}NEQ,omitempty"`
+            {{ pascal .Name }}In     []{{ extract_type . }}  `json:"{{ case .Name }}In,omitempty"`
+            {{ pascal .Name }}NotIn  []{{ extract_type . }}  `json:"{{ case .Name }}NotIn,omitempty"`
             {{- end -}}
             {{- if extract_type . | eq "bool" }}
-                {{ pascal .Name }}EQ  *{{ extract_type . }}  `json:"{{ camel .Name }}EQ,omitempty"`
-                {{ pascal .Name }}NEQ *{{ extract_type . }}  `json:"{{ camel .Name }}NEQ,omitempty"`
+                {{ pascal .Name }}EQ  *{{ extract_type . }}  `json:"{{ case .Name }}EQ,omitempty"`
+                {{ pascal .Name }}NEQ *{{ extract_type . }}  `json:"{{ case .Name }}NEQ,omitempty"`
             {{- end }}
             {{- if is_comparable . }}
-                {{ pascal .Name }}      *{{ extract_type . }}  `json:"{{ camel .Name }},omitempty"`
-                {{ pascal .Name }}NEQ   *{{ extract_type . }}  `json:"{{ camel .Name }}NEQ,omitempty"`
-                {{ pascal .Name }}In    []{{ extract_type . }} `json:"{{ camel .Name }}In,omitempty"`
-                {{ pascal .Name }}NotIn []{{ extract_type . }} `json:"{{ camel .Name }}NotIn,omitempty"`
+                {{ pascal .Name }}      *{{ extract_type . }}  `json:"{{ case .Name }},omitempty"`
+                {{ pascal .Name }}NEQ   *{{ extract_type . }}  `json:"{{ case .Name }}NEQ,omitempty"`
+                {{ pascal .Name }}In    []{{ extract_type . }} `json:"{{ case .Name }}In,omitempty"`
+                {{ pascal .Name }}NotIn []{{ extract_type . }} `json:"{{ case .Name }}NotIn,omitempty"`
                 
                 {{- if enum_or_edge_filed $s . | not }}
-                    {{ pascal .Name }}GT    *{{ extract_type . }}  `json:"{{ camel .Name }}GT,omitempty"`
-                    {{ pascal .Name }}GTE   *{{ extract_type . }}  `json:"{{ camel .Name }}GTE,omitempty"`
-                    {{ pascal .Name }}LT    *{{ extract_type . }}  `json:"{{ camel .Name }}LT,omitempty"`
-                    {{ pascal .Name }}LTE   *{{ extract_type . }}  `json:"{{ camel .Name }}LTE,omitempty"`
+                    {{ pascal .Name }}GT    *{{ extract_type . }}  `json:"{{ case .Name }}GT,omitempty"`
+                    {{ pascal .Name }}GTE   *{{ extract_type . }}  `json:"{{ case .Name }}GTE,omitempty"`
+                    {{ pascal .Name }}LT    *{{ extract_type . }}  `json:"{{ case .Name }}LT,omitempty"`
+                    {{ pascal .Name }}LTE   *{{ extract_type . }}  `json:"{{ case .Name }}LTE,omitempty"`
                 {{- end }}
             {{- end }}
             {{- if .Optional }}
-                {{ pascal .Name }}IsNil    *bool  `json:"{{ camel .Name }}IsNil,omitempty"`
-                {{ pascal .Name }}NotNil   *bool  `json:"{{ camel .Name }}NotNil,omitempty"`
+                {{ pascal .Name }}IsNil    *bool  `json:"{{ case .Name }}IsNil,omitempty"`
+                {{ pascal .Name }}NotNil   *bool  `json:"{{ case .Name }}NotNil,omitempty"`
             {{- end }}
             {{- if eq .Name "id" | not }}
                 {{- if extract_type . | eq "string"}}
-                    {{ pascal .Name }}Contains  	 *string  `json:"{{ camel .Name }}Contains,omitempty"`
-                    {{ pascal .Name }}HasPrefix 	 *string  `json:"{{ camel .Name }}HasPrefix,omitempty"`
-                    {{ pascal .Name }}HasSuffix 	 *string  `json:"{{ camel .Name }}HasSuffix,omitempty"`
-                    {{ pascal .Name }}ContainsFold   *string  `json:"{{ camel .Name }}ContainsFold,omitempty"`
-                    {{ pascal .Name }}EqualFold      *string  `json:"{{ camel .Name }}EqualsFold,omitempty"`
+                    {{ pascal .Name }}Contains  	 *string  `json:"{{ case .Name }}Contains,omitempty"`
+                    {{ pascal .Name }}HasPrefix 	 *string  `json:"{{ case .Name }}HasPrefix,omitempty"`
+                    {{ pascal .Name }}HasSuffix 	 *string  `json:"{{ case .Name }}HasSuffix,omitempty"`
+                    {{ pascal .Name }}ContainsFold   *string  `json:"{{ case .Name }}ContainsFold,omitempty"`
+                    {{ pascal .Name }}EqualFold      *string  `json:"{{ case .Name }}EqualsFold,omitempty"`
                 {{- end }}
             {{- end }}
         {{- end }}
@@ -148,7 +148,7 @@ type OrderField struct {
             }
             {{- end -}}
 
-            // "{{camel .Name}}" field predicates.
+            // "{{case .Name}}" field predicates.
             {{- if extract_type . | eq "bool" }}
             if v := i.{{ pascal .Name }}EQ; v != nil {
 			    predicates = append(predicates, {{ lower $s.Name }}.{{ pascal .Name }}EQ(*v))

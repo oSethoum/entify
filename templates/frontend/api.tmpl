@@ -19,7 +19,7 @@ export class Api {
   private readonly url: string;
   static instance?: Api;
 
-  static getInstance(url: string) {
+  static new(url: string) {
     if (!Api.instance) {
       Api.instance = new Api(url);
     }
@@ -28,10 +28,6 @@ export class Api {
 
   private constructor(url: string) {
     this.url = url.replace(/\/+$/, "");
-  }
-
-  getUrl() {
-    return this.url;
   }
 
   async request(url: string, init?: RequestInit): Promise<any> {

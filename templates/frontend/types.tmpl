@@ -64,7 +64,7 @@ export interface {{ pascal .Name }}QueryInput {
     where?: {{ pascal .Name }}WhereInput;
     order?: {{ pascal .Name }}Order[];
     {{- range .Edges }}
-    with{{ pascal .Name }}?: {{ pascal .Type }}QueryInput;
+    {{ printf "with%s" ( pascal .Name ) }}?: {{ pascal .Type }}QueryInput;
     {{- end }}
 }
 

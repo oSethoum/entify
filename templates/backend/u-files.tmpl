@@ -4,22 +4,23 @@ import (
     "github.com/gofiber/fiber/v2"
 )
 
-{{ if .Sawgger }}
+{{ if .Config.Swagger }}
 // Upload Files godoc
 //
 //	@Summary	Upload Files
 //	@Tags		files
+//	@Accepts	mpfd
 //	@Produce	json
 //	@Param		input body		string	true	"Upload Files"
-//	@Success	200	 {object}	models.UploadFilesBody
+//	@Success	200	 {object}	models.Files
 //	@Failure	400	 {object}	models.Error
 //	@Router		/files [post]
 {{ end -}}
-func UploadFiles(c *fiber.ctx) error {
+func UploadFiles(c *fiber.Ctx) error {
     return nil
 }
 
-{{ if .Sawgger }}
+{{ if .Config.Swagger }}
 // Delete Files godoc
 //
 //	@Summary	Delete Files
@@ -31,7 +32,7 @@ func UploadFiles(c *fiber.ctx) error {
 //	@Failure	400	 {object}	models.Error
 //	@Router		/files [delete]
 {{ end -}}
-func DeleteFiles(c *fiber.ctx) error {
+func DeleteFiles(c *fiber.Ctx) error {
     return nil
 }
 

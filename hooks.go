@@ -50,6 +50,10 @@ func (e *Extension) generate(next gen.Generator) gen.Generator {
 			writeFile(path.Join(destination, fmt.Sprintf("handlers/%s.go", plural(kebab(s.Name)))), parseTemplate("backend/handler", e.data))
 		}
 
+		if in(Files, e.data.Config.Files) {
+			writeFile(path.Join(destination, "handlers/u-files.go"), parseTemplate("backend/u-files", e.data))
+		}
+
 		if in(Auth, e.data.Config.Files) {
 			writeFile(path.Join(destination, "handlers/auth.go"), parseTemplate("backend/auth", e.data))
 		}
