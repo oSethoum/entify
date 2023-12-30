@@ -3,67 +3,68 @@ package handlers
 import (
 	"{{ dir .Package }}/db"
 	"{{ dir .Package }}/ent"
-	"{{ dir .Package }}/ent/{{ lower .CurrentSchema.Name }}"
-	"{{ dir .Package }}/utils"
     "encoding/json"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-{{ if .WithSwagger }}
+{{ if .Config.Swagger }}
 // Query{{ plural .CurrentSchema.Name }} godoc
 //
 //	@Summary	Query {{ plural .CurrentSchema.Name }}
-//	@Tags		{{ snake .CurrenctSchema.Name | plural }}
+//	@Tags		{{ plural .CurrentSchema.Name | kebab }}
 //	@Produce	json
-//	@Param		query	query		ent.{{ .CurrentSchema.Name }}QueryInput	false	"Search"
-//	@Success	200		{object}	models.Query{{ pascal .CurrentSchema.Name | plural }}Result
+//	@Param		query	query		ent.{{ .CurrentSchema.Name }}QueryInput	false	"Query object"
+//	@Success	200		{object}	models.Query{{ plural .CurrentSchema.Name | pascal }}Success
 //	@Failure	400		{object}	models.Error
-//	@Router		/{{ snake .CurrentSchema.Name | plural }}/ [get]
+//	@Router		/{{ plural .CurrentSchema.Name | kebab }}/ [get]
 {{ end -}}
 func Query{{ plural .CurrentSchema.Name }}(c *fiber.Ctx) error {
 	query := new(ent.{{ .CurrentSchema.Name }}QueryInput)
-    q := ctx.Query("query")
+    q := c.Query("query")
 	
     if q != "" {
 		err := json.Unmarshal([]byte(q), query)
 		if err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-                "kind":"parse_query",
+                "ok":false,
+				"kind":"parse_query",
                 "error":err.Error(),
             })
 		}
 	}
 
-    query := db.Client.{{ .CurrentSchema.Name }}.Query().SetInput(query)
+    client := db.Client.{{ .CurrentSchema.Name }}.Query().SetInput(query)
 
-    {{ plural .CurrentSchema.Name | camel }}, err := query.All(c.UserContext())
+    {{ plural .CurrentSchema.Name | camel }}, err := client.All(c.UserContext())
     if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		 	"ok":false,
 			"kind":  "query_data",
 			"error": err.Error(),
 		})
 	}
-    total, _ := query.Count(c.UserContext())
+    total, _ := client.Count(c.UserContext())
 
 	return c.JSON(fiber.Map{
+	 	"ok":true,
 		"total":        total,
-		"{{ plural .CurrentSchema.Name | snake }}": {{ plural .CurrentSchema.Name | camel }},
+		"data": {{ plural .CurrentSchema.Name | camel }},
 	})
 }
 
-{{ if .WithSwagger }}
+{{ if .Config.Swagger }}
 // Create{{ .CurrentSchema.Name }} godoc
 //
 //	@Summary	Create {{ .CurrentSchema.Name }}
-//	@Tags		{{ plural .CurrentSchema.Name | snake }}
+//	@Tags		{{ plural .CurrentSchema.Name | kebab }}
 //	@Accept		json
 //	@Accept		mpfd
 //	@Produce	json
 //	@Param		input	body		ent.{{ .CurrentSchema.Name }}CreateInput	true	"Create {{ .CurrentSchema.Name }}"
 //	@Success	200		{object}	ent.{{ .CurrentSchema.Name }}
 //	@Failure	400		{object}	models.Error
-//	@Router		/{{ plural .CurrentSchema.Name | snake }}/ [post]
+//	@Router		/{{ plural .CurrentSchema.Name | kebab }}/ [post]
 {{ end -}}
 func Create{{ .CurrentSchema.Name }}(c *fiber.Ctx) error {
 	input := new(ent.{{ .CurrentSchema.Name }}CreateInput)
@@ -86,18 +87,18 @@ func Create{{ .CurrentSchema.Name }}(c *fiber.Ctx) error {
 	return c.JSON({{ camel .CurrentSchema.Name }})
 }
 
-{{ if .WithSwagger }}
+{{ if .Config.Swagger }}
 // Update{{ .CurrentSchema.Name }} godoc
 //
 //	@Summary	Update {{ .CurrentSchema.Name }}
-//	@Tags		{{ plural .CurrentSchema.Name | snake }}
+//	@Tags		{{ plural .CurrentSchema.Name | kebab }}
 //	@Accept		json
 //	@Produce	json
 //	@Param		id		path		string						true	"{{ .CurrentSchema.Name }} ID"
 //	@Param		input	body		ent.{{ .CurrentSchema.Name }}UpdateInput	true	"Update {{ .CurrentSchema.Name }} Body"
 //	@Success	200		{object}	ent.{{ .CurrentSchema.Name }}
-//	@Failure	400		{object}	models.ErrorBadRequest
-//	@Router		/{{ plural .CurrentSchema.Name | snake }}/:id [patch]
+//	@Failure	400		{object}	models.Error
+//	@Router		/{{ plural .CurrentSchema.Name | kebab }}/:id [patch]
 {{ end -}}
 func Update{{ .CurrentSchema.Name }}(c *fiber.Ctx) error {
 	input := new(ent.{{ .CurrentSchema.Name }}UpdateInput)
@@ -122,17 +123,17 @@ func Update{{ .CurrentSchema.Name }}(c *fiber.Ctx) error {
 	return c.JSON({{ camel .CurrentSchema.Name }})
 }
 
-{{ if .WithSwagger }}
+{{ if .Config.Swagger }}
 // Delete{{ .CurrentSchema.Name }} godoc
 //
 //	@Summary	Delete {{ .CurrentSchema.Name }}
-//	@Tags		{{ plural .CurrentSchema.Name | snake }}
+//	@Tags		{{ plural .CurrentSchema.Name | kebab }}
 //	@Produce	json
 //	@Param		id	path		string	true	"{{ .CurrentSchema.Name }} ID"
 //	@Success	200	{object}	nil
 //	@Failure	400	{object}	models.Error
 //	@Failure	404	{object}	models.Error
-//	@Router		/{{ plural .CurrentSchema.Name | snake }}/:id [delete]
+//	@Router		/{{ plural .CurrentSchema.Name | kebab }}/:id [delete]
 {{ end -}}
 func Delete{{ .CurrentSchema.Name }}(c *fiber.Ctx) error {
 	id := c.Params("id")

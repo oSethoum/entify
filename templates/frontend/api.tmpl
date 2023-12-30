@@ -1,0 +1,92 @@
+import { API, ID } from "./types";
+
+type QueryResponse<T> =
+  | {
+      ok: true;
+      total: number;
+      data: T;
+    }
+  | { ok: false; kind: string; error: string };
+
+type MutationResponse<T> =
+  | {
+      ok: true;
+      data: T;
+    }
+  | { ok: false; kind: string; error: string };
+
+export class Api {
+  private readonly url: string;
+  static instance?: Api;
+
+  static getInstance(url: string) {
+    if (!Api.instance) {
+      Api.instance = new Api(url);
+    }
+    return Api.instance;
+  }
+
+  private constructor(url: string) {
+    this.url = url.replace(/\/+$/, "");
+  }
+
+  getUrl() {
+    return this.url;
+  }
+
+  async request(url: string, init?: RequestInit): Promise<any> {
+    const method = init?.method || "GET";
+    const headers = {
+      ...init?.headers,
+    };
+
+    let response = await fetch(`${this.url}${url}`, {
+      method,
+      ...init,
+      headers,
+      credentials: "include",
+    });
+
+    const json = await response.json();
+    return json;
+  }
+
+  async query<T extends keyof API>(
+    resource: T,
+    query?: API[T]["queryInput"]
+  ): Promise<QueryResponse<Array<API[T]["entity"]>>> {
+    const url = `/${String(resource)}/${query ? `?query=${JSON.stringify(query)}` : ""}`;
+    return await this.request(url);
+  }
+
+  async create<T extends keyof API>(
+    resource: T,
+    input: API[T]["createInput"]
+  ): Promise<MutationResponse<API[T]["entity"]>> {
+    const url = `/${String(resource)}/`;
+    const body = JSON.stringify(input);
+    return await this.request(url, {
+      method: "POST",
+      body,
+      headers: { "content-type": "application/json" },
+    });
+  }
+
+  async update<T extends keyof API>(
+    resource: T,
+    id: ID,
+    input: API[T]["updateInput"]
+  ): Promise<MutationResponse<API[T]["entity"]>> {
+    const url = `/${String(resource)}/${id}`;
+    const body = JSON.stringify(input);
+    return await this.request(url, {
+      method: "PATCH",
+      body,
+      headers: { "content-type": "application/json" },
+    });
+  }
+
+  async delete<T extends keyof API>(resource: T, id: ID): Promise<MutationResponse<undefined>> {
+    return await this.request(`/${String(resource)}/${id}`, { method: "DELETE" });
+  }
+}

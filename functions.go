@@ -8,10 +8,13 @@ import (
 	"entgo.io/ent/entc/gen"
 	"entgo.io/ent/entc/load"
 	"entgo.io/ent/schema/field"
+	"github.com/iancoleman/strcase"
 )
 
 var (
 	pascal     = gen.Funcs["pascal"].(func(string) string)
+	plural     = gen.Funcs["plural"].(func(string) string)
+	kebab      = strcase.ToKebab
 	snake      = gen.Funcs["snake"].(func(string) string)
 	buggyCamel = gen.Funcs["camel"].(func(string) string)
 	camel      = func(s string) string { return buggyCamel(snake(s)) }
@@ -233,5 +236,5 @@ func initFunctions(e *Extension) {
 	gen.Funcs["select_fields"] = select_fields
 	gen.Funcs["dir"] = path.Dir
 	gen.Funcs["is_base"] = is_base
-
+	gen.Funcs["kebab"] = kebab
 }

@@ -3,7 +3,6 @@ package routes
 import (
     "{{ dir .Package }}/handlers"
     "github.com/gofiber/fiber/v2"
-    "github.com/gofiber/contrib/websocket"
 )
 
 func routes(r fiber.Router) {
@@ -13,7 +12,6 @@ func routes(r fiber.Router) {
     {{- $ppn := pascal .Name | plural -}}
         {{$r }} := r.Group("/{{ $r }}")
         {{ $r }}.Get("/", handlers.Query{{ $ppn }})
-        {{ $r }}.Get("/:id", handlers.Find{{ $pn }})
         {{ $r }}.Post("/", handlers.Create{{ $pn }})
         {{ $r }}.Patch("/:id", handlers.Update{{ $pn }})
         {{ $r }}.Delete("/:id", handlers.Delete{{ $pn }})

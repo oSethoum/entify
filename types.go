@@ -27,6 +27,8 @@ const (
 	Env
 	Routes
 	Token
+	Model
+	Swagger
 	Types
 	Upload
 	Utils
@@ -54,6 +56,7 @@ type data struct {
 
 type Config struct {
 	Case          Case
+	IDType        string
 	ClientPath    string
 	Package       string
 	IgnoreSchemas []string

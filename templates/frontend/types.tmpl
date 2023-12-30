@@ -24,9 +24,9 @@ export interface {{ pascal .Name }}CreateInput{
     {{- range .Edges}}
         {{- if edge_field . | not }}
             {{- if .Unique}}
-                {{ camel .Name }}Id{{- if not .Required}}?{{- end}}: {{ get_type_info $g.Config.IDType }};
+                {{ camel .Name }}Id{{- if not .Required}}?{{- end}}: {{ get_type_info $g.IDType }};
             {{- else}}
-                add{{ singular .Name | pascal }}Ids?: {{ get_type_info $g.Config.IDType }}[];
+                add{{ singular .Name | pascal }}Ids?: {{ get_type_info $g.IDType }}[];
             {{- end  }}
         {{- end }}
     {{- end}}
@@ -39,7 +39,7 @@ export interface {{ pascal .Name }}UpdateInput{
     {{- range .Edges}}
         {{- if edge_field . | not }}
             {{- if .Unique}}
-                {{ camel .Name }}Id?: {{ get_type_info $g.Config.IDType }};
+                {{ camel .Name }}Id?: {{ get_type_info $g.IDType }};
             {{- else}}
                 add{{ singular .Name | pascal }}Ids?: {{ id_type $s }}[];
                 remove{{ singular .Name | pascal }}Ids?: {{ id_type $s }}[];
@@ -118,6 +118,8 @@ export interface {{ pascal .Name }}WhereInput {
     {{- end}}
 }
 {{- end }}
+
+export type ID = string;
 
 export type API = {
     {{ range .Schemas}}

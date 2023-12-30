@@ -1,0 +1,20 @@
+//go:build ignore
+// +build ignore
+
+package models
+
+type Files struct {
+    Files []string `json:"files"`
+}
+
+type Error struct {
+    Kind string `json:"kind,omitempty" form:"kind,omitempty"`
+    Error string `json:"error,omitempty" form:"error,omitempty"`
+}
+
+{{ range .Schemas }}
+type Query{{ plural .Name | pascal }}Success struct { 
+    Total string `json:"total"`
+    Data ent.{{pascal .Name }} `json:"data"`
+}
+{{ end }}

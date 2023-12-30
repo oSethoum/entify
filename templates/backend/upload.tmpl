@@ -4,33 +4,34 @@ import (
     "github.com/gofiber/fiber/v2"
 )
 
-{{ if .WithSwagger }}
+{{ if .Sawgger }}
 // Upload Files godoc
 //
 //	@Summary	Upload Files
-//	@Tags		upload
+//	@Tags		files
 //	@Produce	json
 //	@Param		input body		string	true	"Upload Files"
 //	@Success	200	 {object}	models.UploadFilesBody
 //	@Failure	400	 {object}	models.Error
-//	@Router		/upload/many [delete]
+//	@Router		/files [post]
 {{ end -}}
 func UploadFiles(c *fiber.ctx) error {
     return nil
 }
 
-{{ if .WithSwagger }}
-// Upload File godoc
+{{ if .Sawgger }}
+// Delete Files godoc
 //
-//	@Summary	Upload File
-//	@Tags		upload
+//	@Summary	Delete Files
+//	@Tags		files
+//	@Accept	    json
 //	@Produce	json
-//	@Param		input body		string	true	"Upload File"
-//	@Success	200	 {object}	models.UploadFilesBody
+//	@Param		input body		models.Files	true	"Upload File Body"
+//	@Success	200	 {object}	models.Files
 //	@Failure	400	 {object}	models.Error
-//	@Router		/upload/one [delete]
+//	@Router		/files [delete]
 {{ end -}}
-func UploadFiles(c *fiber.ctx) error {
+func DeleteFiles(c *fiber.ctx) error {
     return nil
 }
 
