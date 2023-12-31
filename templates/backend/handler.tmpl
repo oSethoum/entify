@@ -34,9 +34,15 @@ func Query{{ plural .CurrentSchema.Name }}(c *fiber.Ctx) error {
 		}
 	}
 
+	limit := query.Limit
+	offset := query.Offset
+	
+	query.Limit = nil
+	query.Offset = nil
+
     client := db.Client.{{ .CurrentSchema.Name }}.Query().SetInput(query)
 
-    {{ plural .CurrentSchema.Name | camel }}, err := client.All(c.UserContext())
+    total, err := client.Count(c.UserContext())
     if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 		 	"ok":false,
@@ -44,8 +50,16 @@ func Query{{ plural .CurrentSchema.Name }}(c *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
-    total, _ := client.Count(c.UserContext())
 
+	if limit != nil {
+		client.Limit(*limit)
+	}
+
+	if offset != nil {
+		client.Offset(*offset)
+	}
+	
+    {{ plural .CurrentSchema.Name | camel }}, _ := client.All(c.UserContext())
 	return c.JSON(fiber.Map{
 	 	"ok":true,
 		"total":        total,

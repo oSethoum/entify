@@ -1,29 +1,260 @@
 package handlers
 
 import (
-    "github.com/gofiber/fiber/v2"
+	"{{ dir .Package }}/db"
+	"{{ dir .Package }}/ent/user"
+	"{{ dir .Package }}/models"
+	"{{ dir .Package }}/privacy"
+	"{{ dir .Package }}/utils"
+	"os"
+	"time"
+
+	"aidanwoods.dev/go-paseto"
+	"github.com/gofiber/fiber/v2"
 )
 
-
+{{ if .Config.Swagger }}
+// Login godoc
+//
+//	@Summary	Login
+//	@Tags		auth
+//	@Produce	json
+//	@Param		input	body		models.LoginInput	false	"Login body"
+//	@Success	200		{object}	models.LoginSuccess
+//	@Failure	400		{object}	models.Error
+//	@Router		/auth/login [post]
+{{ end -}}
 func Login(c *fiber.Ctx) error {
-    return nil
+
+	body := new(models.LoginInput)
+
+	err := c.BodyParser(body)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	user, err := db.Client.User.Query().
+		Where(user.Email(body.Email)).First(c.UserContext())
+
+	if err != nil || !utils.CheckPasswordHash(body.Password, user.Password) {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	key, err := paseto.V4SymmetricKeyFromHex(os.Getenv("TOKEN_KEY"))
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	token := paseto.NewToken()
+	token.Set("user", user)
+
+	token.SetExpiration(time.Now().Add(time.Hour * 24 * 30))
+
+	tokenString := token.V4Encrypt(key, nil)
+
+	cookie := &fiber.Cookie{
+		Name:     "token",
+		Value:    tokenString,
+		Secure:   true,
+		HTTPOnly: true,
+		Domain:   os.Getenv("DOMAIN"),
+	}
+
+	if body.RememberMe {
+		cookie.Expires = time.Now().Add(time.Hour * 24 * 30)
+	} else {
+		cookie.SessionOnly = true
+	}
+
+	c.Cookie(cookie)
+
+	return c.JSON(fiber.Map{
+		"token": tokenString,
+		"user":  user,
+	})
 }
 
-func Register(c *fiber.Ctx) error {
-    return nil
-}
-
+{{ if .Config.Swagger }}
+// Login godoc
+//
+//	@Summary	Login
+//	@Tags		auth
+//	@Produce	json
+//	@Param		input	body		models.ForgetPasswordInput	false	"Login object"
+//	@Success	200		{object}	models.ForgetPasswordSuccess
+//	@Failure	400		{object}	models.Error
+//	@Router		/auth/login [post]
+{{ end -}}
 func ForgotPassword(c *fiber.Ctx) error {
-    return nil
+
+	body := new(models.ForgotPasswordInput)
+
+	err := c.BodyParser(body)
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"ok":    false,
+			"kind":  "parse_body",
+			"error": err.Error(),
+		})
+	}
+
+	_, err = db.Client.User.Query().Where(user.Email(body.Email)).First(c.UserContext())
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"ok":    false,
+			"kind":  "find_entity",
+			"error": err.Error(),
+		})
+	}
+
+	// create token with short expiry time like 30 min
+	// TODO: send email to the user to recover password
+
+	return c.JSON(fiber.Map{
+		"ok": true,
+	})
 }
 
-
+{{ if .Config.Swagger }}
+// ResetPassword godoc
+//
+//	@Summary	Reset Password
+//	@Tags		brands
+//	@Produce	json
+//	@Param		input	body		models.ResetPasswordInput	false	"Reset Password Body"
+//	@Success	200		{object}	models.ResetPasswordSuccess
+//	@Failure	400		{object}	models.Error
+//	@Router		/auth/reset-password/:token [post]
+{{ end -}}
 func ResetPassword(c *fiber.Ctx) error {
-    return nil
+	// TODO: get the user information from the short token
+	body := new(models.ResetPasswordInput)
+	err := c.BodyParser(body)
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"ok":    false,
+			"kind":  "parse_body",
+			"error": err.Error(),
+		})
+	}
+
+	// newPasswordHash, err := utils.HashPassword(body.NewPassword)
+	// if err != nil {
+	// 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+	// 		"ok":    false,
+	// 		"kind":  "hash_new_password",
+	// 		"error": err.Error(),
+	// 	})
+	// }
+
+	// _, err = db.Client.User.UpdateOneID(user.ID).SetPassword(newPasswordHash).Save(c.UserContext())
+	// if err != nil {
+	// 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+	// 		"ok":    false,
+	// 		"kind":  "update_password",
+	// 		"error": err.Error(),
+	// 	})
+	// }
+
+	return c.JSON(fiber.Map{
+		"ok": true,
+	})
 }
 
-
+{{ if .Config.Swagger }}
+// Refresh User godoc
+//
+//	@Summary	Refresh user information using the access token
+//	@Tags		brands
+//	@Produce	json
+//	@Param		query	query		ent.BrandQueryInput	false	"Query object"
+//	@Success	200		{object}	models.QueryBrandsSuccess
+//	@Failure	400		{object}	models.Error
+//	@Router		/auth/refresh [post]
+{{ end -}}
 func Refresh(c *fiber.Ctx) error {
-    return nil
+	authUser := privacy.GetAuthUser(c.UserContext())
+
+	currentUser, err := db.Client.User.Query().
+		Where(user.ID(authUser.ID)).
+		First(c.UserContext())
+
+	if err != nil {
+		return c.SendStatus(fiber.StatusUnauthorized)
+	}
+
+	return c.JSON(fiber.Map{
+		"user": currentUser,
+	})
 }
 
+{{ if .Config.Swagger }}
+// QueryBrands godoc
+//
+//	@Summary	Query Brands
+//	@Tags		brands
+//	@Produce	json
+//	@Param		query	query		ent.BrandQueryInput	false	"Query object"
+//	@Success	200		{object}	models.QueryBrandsSuccess
+//	@Failure	400		{object}	models.Error
+//	@Router		/auth/change-password [post]
+{{ end -}}
+func ChangePassword(c *fiber.Ctx) error {
+	body := new(models.ChangePasswordInput)
+	err := c.BodyParser(body)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"ok":    false,
+			"kind":  "parse_body",
+			"error": err.Error(),
+		})
+	}
+
+	authUser := privacy.GetAuthUser(c.UserContext())
+	user, err := db.Client.User.Get(c.UserContext(), authUser.ID)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"ok":    false,
+			"kind":  "find_entity",
+			"error": err.Error(),
+		})
+	}
+
+	if !utils.CheckPasswordHash(body.Password, user.Password) {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"ok":    false,
+			"kind":  "check_hash",
+			"error": "password doesn't match",
+		})
+	}
+
+	// perform some validation on new password
+
+	newPasswordHash, err := utils.HashPassword(body.Password)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"ok":    false,
+			"kind":  "hash_new_password",
+			"error": err.Error(),
+		})
+	}
+
+	_, err = db.Client.User.UpdateOneID(user.ID).SetPassword(newPasswordHash).Save(c.UserContext())
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"ok":    false,
+			"kind":  "update_password",
+			"error": err.Error(),
+		})
+	}
+	return nil
+}

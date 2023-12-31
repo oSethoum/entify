@@ -3,9 +3,17 @@
 
 package models
 
+import "{{ dir .Package }}/ent"
+
+type LoginSuccess struct {
+	Token string   `json:"token,omitempty"`
+	User  ent.User `json:"user,omitempty"`
+}
+
 type Error struct {
-    Kind string `json:"kind,omitempty" form:"kind,omitempty"`
-    Error string `json:"error,omitempty" form:"error,omitempty"`
+	Ok    bool   `json:"ok,omitempty"`
+	Kind  string `json:"kind,omitempty"`
+	Error string `json:"error,omitempty"`
 }
 
 {{ range .Schemas }}
