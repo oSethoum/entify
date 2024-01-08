@@ -34,7 +34,7 @@ func UploadFiles(c *fiber.Ctx) error {
 		})
 	}
 
-	files := form.File["documents"]
+	files := form.File["files"]
 	names := []string{}
 	for _, file := range files {
 		name := utils.ID() + filepath.Ext(file.Filename)
