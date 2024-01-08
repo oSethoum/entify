@@ -96,7 +96,22 @@ func initFunctions(e *Extension) {
 			}
 		}
 
-		return imps
+		// remove duplication
+		result := []string{}
+
+		for _, i := range imps {
+			found := false
+			for _, r := range result {
+				if r == i {
+					found = true
+				}
+			}
+			if !found {
+				result = append(result, i)
+			}
+		}
+
+		return result
 	}
 
 	extract_type_info := func(t *field.TypeInfo) string {

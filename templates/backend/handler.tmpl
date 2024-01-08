@@ -6,6 +6,7 @@ import (
     "encoding/json"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/rs/zerolog/log"
 )
 
 {{ if .Config.Swagger }}
@@ -26,6 +27,7 @@ func Query{{ plural .CurrentSchema.Name }}(c *fiber.Ctx) error {
     if q != "" {
 		err := json.Unmarshal([]byte(q), query)
 		if err != nil {
+			log.Debug().Msg(err.Error())
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
                 "ok":false,
 				"kind":"parse_query",
@@ -44,8 +46,9 @@ func Query{{ plural .CurrentSchema.Name }}(c *fiber.Ctx) error {
 
     total, err := client.Count(c.UserContext())
     if err != nil {
+		log.Debug().Msg(err.Error())
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-		 	"ok":false,
+		 	"ok": false,
 			"kind":  "query_data",
 			"error": err.Error(),
 		})
@@ -84,6 +87,7 @@ func Create{{ .CurrentSchema.Name }}(c *fiber.Ctx) error {
 	input := new(ent.{{ .CurrentSchema.Name }}CreateInput)
 	err := c.BodyParser(input)
 	if err != nil {
+		log.Debug().Msg(err.Error())
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"kind":  "parse_body",
 			"error": err.Error(),
@@ -92,6 +96,7 @@ func Create{{ .CurrentSchema.Name }}(c *fiber.Ctx) error {
 
 	{{ camel .CurrentSchema.Name  }}, err := db.Client.{{ .CurrentSchema.Name }}.Create().SetInput(input).Save(c.UserContext())
 	if err != nil {
+		log.Debug().Msg(err.Error())
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"kind":  "create_entity",
 			"error": err.Error(),
@@ -120,6 +125,7 @@ func Update{{ .CurrentSchema.Name }}(c *fiber.Ctx) error {
 
 	err := c.BodyParser(input)
 	if err != nil {
+		log.Debug().Msg(err.Error())
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"kind":  "parse_body",
 			"error": err.Error(),
@@ -128,6 +134,7 @@ func Update{{ .CurrentSchema.Name }}(c *fiber.Ctx) error {
 
 	{{ camel .CurrentSchema.Name }}, err := db.Client.{{ .CurrentSchema.Name }}.UpdateOneID(id).SetInput(input).Save(c.UserContext())
 	if err != nil {
+		log.Debug().Msg(err.Error())
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"kind":  "update_entity",
 			"error": err.Error(),
@@ -153,6 +160,7 @@ func Delete{{ .CurrentSchema.Name }}(c *fiber.Ctx) error {
 	id := c.Params("id")
 	err := db.Client.{{ .CurrentSchema.Name }}.DeleteOneID(id).Exec(c.UserContext())
 	if err != nil {
+		log.Debug().Msg(err.Error())
 		status := fiber.StatusBadRequest
 
 		if ent.IsNotFound(err) {

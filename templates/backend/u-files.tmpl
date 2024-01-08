@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/rs/zerolog/log"
 )
 
 {{ if .Config.Swagger }}
@@ -26,6 +27,7 @@ func UploadFiles(c *fiber.Ctx) error {
 	form, err := c.MultipartForm()
 
 	if err != nil {
+		log.Debug().Msg(err.Error())
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"kind":  "multipart_form",
 			"error": err.Error(),
@@ -39,6 +41,8 @@ func UploadFiles(c *fiber.Ctx) error {
 		err := c.SaveFile(file, fmt.Sprintf("./upload/%s", name))
 		if err == nil {
 			names = append(names, name)
+		} else {
+			log.Debug().Msg(err.Error())
 		}
 	}
 
@@ -66,6 +70,7 @@ func DeleteFiles(c *fiber.Ctx) error {
 	err := c.BodyParser(body)
 
 	if err != nil {
+		log.Debug().Msg(err.Error())
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"kind":  "parse_body",
 			"error": err.Error(),
@@ -76,6 +81,8 @@ func DeleteFiles(c *fiber.Ctx) error {
 		err = os.Remove(fmt.Sprintf("./upload/%s", name))
 		if err == nil {
 			names = append(names, name)
+		} else {
+			log.Debug().Msg(err.Error())
 		}
 	}
 
